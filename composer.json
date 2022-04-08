@@ -12,7 +12,7 @@
     },
     "autoload": {
         "psr-4": {
-            "usualtool\\ut-swoole\\": "src/"
+            "usualtool\\swoole\\": "src/"
         }
     },
     "minimum-stability": "dev"
