@@ -1,5 +1,5 @@
 <?php
-namespace usualtool\swoole;
+namespace usualtool\Swoole;
 use library\UsualToolMysql;
 /**
  * UT基于Swoole的数据库连接池
