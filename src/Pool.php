@@ -2,7 +2,6 @@
 namespace usualtool\Swoole;
 use library\UsualToolMysql;
 /**
- * UT基于Swoole的数据库连接池/异步风格
  * 目前支持Mysql
  * $mode 默认0,0CLI模式 1客户端模式
  * $worker_num 默认5,进程数
@@ -90,7 +89,7 @@ class Pool{
         echo "done";
     }
     public function Query($sql){
-        $timeout=20;//请求超时时间
+        $timeout=20;
         $client=new \Swoole\Client(SWOOLE_SOCK_TCP);
         $client->connect($this->host,$this->port,$timeout) or die("connection failed");
         $client->send($sql);
