@@ -2,13 +2,13 @@
 namespace usualtool\Swoole;
 use library\UsualToolMysql;
 /**
- * UT基于Swoole的数据库连接池
+ * UT基于Swoole的数据库连接池/异步风格
  * 目前支持Mysql
  * $mode 默认0,0CLI模式 1客户端模式
  * $worker_num 默认5,进程数
  * $task_num 默认10,维持连接数
  * $dispatch_mode 默认2,1轮循 2固定 3抢占 4IP分配 5UID分配 7stream
- * $daemonize 默认0,守护进程 1开启 0关闭
+ * $daemonize 默认0,守护进程 1开启 0关闭1
  */
 class Pool{
     protected $log_file;
