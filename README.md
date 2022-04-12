@@ -1,6 +1,6 @@
 # ut-swoole
-#UT framework extension:Swoole.
+UT framework extension:Swoole.
 
-#composer require usualtool/ut-swoole
+composer require usualtool/ut-swoole
 
-#frame.usualtool.com
+frame.usualtool.com
