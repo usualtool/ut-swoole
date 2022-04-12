@@ -7,18 +7,18 @@ use library\UsualToolMysql;
  * $worker_num 默认5,进程数
  * $task_num 默认10,维持连接数
  * $dispatch_mode 默认2,1轮循 2固定 3抢占 4IP分配 5UID分配 7stream
- * $daemonize 默认0,守护进程 1开启 0关闭1
+ * $daemonize 默认0,守护进程 1开启 0关闭
  */
 class Pool{
     protected $log_file;
     protected $max_request;
-    public function __construct($host='127.0.0.1',$port='9510',$mode='0',$worker_num='5',$task_num='10',$dispatch_mode='2',$daemonize='0'){
+    public function __construct($host='127.0.0.1',$port='9510',$mode='0',$daemonize='0'){
         $this->host = $host;
         $this->port = $port;
         $this->mode = $mode;
-        $this->worker_num = $worker_num;
-        $this->task_worker_num = $task_num;    
-        $this->dispatch_mode = $dispatch_mode;
+        $this->worker_num = 5;
+        $this->task_worker_num = 10;    
+        $this->dispatch_mode = 2;
         $this->daemonize = $daemonize;
         $this->max_request = 10000;
         if($this->mode==0):
