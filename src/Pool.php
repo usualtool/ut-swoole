@@ -28,7 +28,7 @@ class Pool{
                 'task_worker_num' => $this->task_worker_num,
                 'max_request' => $this->max_request,
                 'daemonize' => $this->daemonize,
-                'log_file' => UTF_ROOT."/app/modules/ut-frame/debug/app_debug.log",
+                'log_file' => APP_ROOT."/app/other.log",
                 'dispatch_mode' => $this->dispatch_mode
             ));
         endif;
