@@ -6,7 +6,16 @@ class Websocket{
         $this->host = $host;
         $this->port = $port;
         $this->type = $type;
-        $this->server = new \Swoole\Websocket\Server($this->host,$this->port);
+        $this->server = new \Swoole\Websocket\Server(
+            $this->host,
+            $this->port,
+            SWOOLE_PROCESS,
+            SWOOLE_SOCK_TCP|SWOOLE_SSL
+        );
+        $this->server->set([
+     	    'ssl_cert_file' => dirname(dirname(__FILE__))."/ssl/pem.pem",
+     	    'ssl_key_file'  => dirname(dirname(__FILE__))."/ssl/key.key"
+        ]);
     }
     public function Run(){
         $this->server->on("open", [$this, "OnOpen"]);
