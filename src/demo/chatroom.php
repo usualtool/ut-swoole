@@ -19,7 +19,7 @@
     <p id="output"></p>
 </body>
 <script language="javascript" type="text/javascript">
-    var wsUri ="ws://112.74.176.79:3003/";
+    var wsUri ="ws://127.0.0.1:3003/";
     var output;
     function init() {
         output = document.getElementById("output");
