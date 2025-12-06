@@ -2,11 +2,11 @@
     "name":             "usualtool/ut-swoole",
     "description":      "UT framework extension:Swoole.",
     "keywords":         ["ut-swoole", "usualtool", "UT Framework"],
-    "homepage":         "http://frame.usualtool.com",
+    "homepage":         "https://github.com/usualtool",
     "license": "Apache-2.0",
     "authors": [{
-        "name":         "HuangDou",
-        "email":        "292951110@qq.com"
+        "name":         "Huang Hui",
+        "email":        "usualtool@qq.com"
     }],
     "require": {
     },
