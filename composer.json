@@ -1,6 +1,6 @@
 {
     "name":             "usualtool/ut-swoole",
-    "description":      "UT framework extension:Swoole.",
+    "description":      "UT Framework Extension:Swoole.",
     "keywords":         ["ut-swoole", "usualtool", "UT Framework"],
     "homepage":         "https://github.com/usualtool",
     "license": "Apache-2.0",
