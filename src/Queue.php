@@ -1,6 +1,6 @@
 <?php
 namespace usualtool\Swoole;
-use library\UsualToolInc;
+use usualtool\Lib\Inc;
 /**
  * $task_worker_num 默认4,维持连接数
  * $daemonize 默认0,守护进程 1开启 0关闭
@@ -37,7 +37,7 @@ class Queue{
     }
     public function HttpGet($url,$data){
         if($data){
-            if(UsualToolInc\UTInc::Contain("?",$url)){
+            if(Inc::Contain("?",$url)){
                 $url.='&'.http_build_query($data);
             }else{
                 $url.='?'.http_build_query($data);
