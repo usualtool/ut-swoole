@@ -1,6 +1,6 @@
 <?php
 namespace usualtool\Swoole;
-use library\UsualToolMysql;
+use usualtool\Lib\Mysql;
 /**
  * 目前支持Mysql
  * $mode 默认0,0CLI模式 1客户端模式
@@ -57,7 +57,7 @@ class Pool{
         static $link = null;
         UTKILL:
             if ($link == null) {
-                $link = UsualToolMysql\UTMysql::GetMysql();
+                $link = Mysql::GetMysql();
                 if (!$link) {
                     $link = null;
                     $this->pool->finish(mysqli_error($link));
