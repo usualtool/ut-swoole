@@ -8,7 +8,7 @@ class Http{
         $this->server = new \Swoole\Http\Server($this->host,$this->port);
         $this->server->set(array(
             "enable_static_handler" => true,
-            "document_root" => UTF_ROOT,
+            "document_root" => OPEN_ROOT,
             "worker_num"=>10
         ));
     }
