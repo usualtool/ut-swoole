@@ -2,7 +2,6 @@
 namespace usualtool\Swoole;
 use Share\Data\Db;
 /**
- * 目前支持Mysql
  * $mode 默认0,0CLI模式 1客户端模式
  * $worker_num 默认5,进程数
  * $task_num 默认10,维持连接数
