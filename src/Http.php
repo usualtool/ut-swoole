@@ -42,7 +42,7 @@ class Http{
             return;
         }
         ob_start();
-        require_once 'App.php';
+        require __DIR__.'/App.php';
         $body = ob_get_contents();
         ob_end_clean();
         $response->end($body);
