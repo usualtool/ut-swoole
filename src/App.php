@@ -1,72 +1,97 @@
 <?php
-ini_set("error_reporting","E_ALL & ~E_NOTICE");
-ini_set('magic_quotes_gpc',0);
-define('UTF_ROOT', dirname(dirname(dirname(dirname(dirname(__FILE__))))));
-define('APP_ROOT', dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/app');
-define('PUB_PATH', APP_ROOT.'/modules/ut-frame');
-define('PUB_TEMP', PUB_PATH.'/skin');
-session_start();
+/**
+ * UsualTool Framework - Swoole HTTP 适配入口
+ */
+if(!defined('UTF_ROOT')){
+    $root=getenv('UT_ROOT') ?: '';
+    if($root===''){
+        $dir=__DIR__;
+        for($i=0;$i<8;$i++){
+            if(is_file($dir.'/.ut.config')){
+                $root=$dir;
+                break;
+            }
+            $next=dirname($dir);
+            if($next===$dir){
+                break;
+            }
+            $dir=$next;
+        }
+    }
+    define('UTF_ROOT',$root==='' ? dirname(__DIR__,2) : $root);
+}
 require_once UTF_ROOT.'/autoload.php';
-use usualtool\Lib\Inc;
-use usualtool\Lib\Route;
-use usualtool\Lib\Temp;
-use usualtool\Lib\Debug;
-$config=Inc::GetConfig();
-if($request->get):
-    foreach ($request->get as $key => $val):
-        $_GET[$key] = $val;
-    endforeach;
-else:
-    foreach(Route::Analy($request->server["path_info"]) as $key=>$val):
-        $_GET[$key]=$val;
-    endforeach;
-endif;
-$m=empty($_GET["m"]) ? $config["DEFAULT_MOD"] : Inc::SqlCheck($_GET["m"]);
-$p=empty($_GET["p"]) ? $config["DEFAULT_PAGE"] : Inc::SqlCheck(str_replace(".php","",$_GET["p"]));
-$modpath=APP_ROOT."/modules/".$m;
-$endpath=Inc::TempEndPath();
-$frontwork=APP_ROOT."/formwork/".$config["FORMWORK_FRONT"];
-$adminwork=APP_ROOT."/formwork/".$config["FORMWORK_ADMIN"];
-$isdevelop=Inc::Contain("app/dev",Inc::CurPageUrl());
-if($config["FORMWORK_ADMIN"]!='0' && $isdevelop):
-    $skin=$adminwork."/skin/".$m;
-    $cache=$skin."/cache";
-elseif($config["FORMWORK_FRONT"]!='0' && !$isdevelop):
-    $skin=$frontwork."/skin/".$m;
-    $cache=$skin."/cache";
-else:
-    $skin=$modpath."/skin";
-    $cache=$modpath."/cache";
-endif;
-$app=new Temp(
-    $config["TEMPCACHE"],
-    $skin."/".$endpath,
-    $cache."/".$endpath
-);
-$app->Runin(array("appname","appurl","module","page"),array($config["APPNAME"],$config["APPURL"],$m,$p));
-$app->Runin(array("lang","thelang"),array(explode(",",$config["LANG_OPTION"]),$config["LANG"]));
-if(!empty($_COOKIE['Language'])):
-    $language=Inc::SqlCheck($_COOKIE['Language']);
-else:
-    if($config["LANG"]=="big5"):
-        $language="zh";
-        setcookie("Language","zh");
-        setcookie("chinaspeak","big5");
-    else:
-        $language=$config["LANG"];
-        setcookie("Language",$config["LANG"]);
-        setcookie("chinaspeak","");
-    endif;
-endif;
-$app->Runin(array("editor"),array($config["EDITOR"]));
-$app->Runin("pubtemp",PUB_TEMP."/front");
-$app->Runin("formwork",$frontwork."/skin/ut-frame/front");
-$modfile=$modpath."/front/".$p.".php";
-if(Inc::SearchFile($modfile)):
-    require_once $modfile;
-else:
-    echo"Swoole Error:No Page.";
-endif;
-if($config["DEBUG"]):
-    Debug::Debug($config["DEBUG_BAR"]);
-endif;
+use usualtool\Lib\Kernel;
+/**
+ * 从 Swoole 请求构造 PHP 超级全局
+ */
+$server=array();
+if(isset($request) && is_object($request)){
+    foreach((array)$request->server as $key=>$val){
+        $server[strtoupper($key)]=$val;
+    }
+    foreach((array)$request->header as $key=>$val){
+        $server['HTTP_'.strtoupper(str_replace('-','_',$key))]=$val;
+    }
+    $server['HTTP_HOST']=$server['HTTP_HOST'] ?? ($server['SERVER_NAME'] ?? 'localhost');
+    $server['REQUEST_METHOD']=$server['REQUEST_METHOD'] ?? 'GET';
+    $server['REQUEST_URI']=$server['REQUEST_URI'] ?? '/';
+    $server['SCRIPT_NAME']=$server['SCRIPT_NAME'] ?? '/index.php';
+    $server['QUERY_STRING']=$server['QUERY_STRING'] ?? (parse_url($server['REQUEST_URI'],PHP_URL_QUERY) ?: '');
+    if(strtolower($server['HTTP_X_FORWARDED_PROTO'] ?? '')==='https'){
+        $server['HTTPS']='on';
+    }
+    $get=is_array($request->get) ? $request->get : array();
+    $post=is_array($request->post) ? $request->post : array();
+    $cookie=is_array($request->cookie) ? $request->cookie : array();
+}else{
+    $get=$_GET;
+    $post=$_POST;
+    $cookie=$_COOKIE;
+}
+/**
+ * 执行请求
+ */
+try{
+    $result=Kernel::Handle(array(
+        'server'=>$server,
+        'get'=>$get,
+        'post'=>$post,
+        'cookie'=>$cookie,
+        'session'=>true
+    ));
+}catch(\Throwable $e){
+    if(isset($response) && is_object($response)){
+        $response->status(500);
+        $response->end('Swoole Error:'.$e->getMessage());
+        return;
+    }
+    echo 'Swoole Error:'.$e->getMessage();
+    return;
+}
+/**
+ * 回写响应头
+ */
+if(isset($response) && is_object($response) && method_exists($response,'header')){
+    $cookies=array();
+    foreach($result['headers'] as $header){
+        $pos=strpos($header,':');
+        if($pos===false){
+            continue;
+        }
+        $name=trim(substr($header,0,$pos));
+        $value=trim(substr($header,$pos+1));
+        if(strcasecmp($name,'Set-Cookie')===0){
+            $cookies[]=$value;
+        }else{
+            $response->header($name,$value);
+        }
+    }
+    if(!empty($cookies)){
+        $response->header('Set-Cookie',$cookies);
+    }
+    if(!empty($result['status']) && $result['status']!==200){
+        $response->status($result['status']);
+    }
+}
+echo $result['output'];
