@@ -44,6 +44,7 @@ if(isset($request) && is_object($request)){
     $get=is_array($request->get) ? $request->get : array();
     $post=is_array($request->post) ? $request->post : array();
     $cookie=is_array($request->cookie) ? $request->cookie : array();
+    $_FILES=is_array($request->files) ? $request->files : array();
 }else{
     $get=$_GET;
     $post=$_POST;
