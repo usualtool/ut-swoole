@@ -1,6 +1,6 @@
 <?php
 namespace usualtool\Swoole;
-use usualtool\Lib\Mysql;
+use Share\Data\Db;
 /**
  * 目前支持Mysql
  * $mode 默认0,0CLI模式 1客户端模式
@@ -13,6 +13,27 @@ class Pool{
     protected $log_file;
     protected $max_request;
     public function __construct($host='127.0.0.1',$port='9510',$mode='0',$daemonize='0'){
+        if(!defined('UTF_ROOT')){
+            $root=getenv('UT_ROOT') ?: '';
+            if($root===''){
+                $dir=__DIR__;
+                for($i=0;$i<8;$i++){
+                    if(is_file($dir.'/.ut.config')){
+                        $root=$dir;
+                        break;
+                    }
+                    $next=dirname($dir);
+                    if($next===$dir){
+                        break;
+                    }
+                    $dir=$next;
+                }
+            }
+            define('UTF_ROOT',$root==='' ? dirname(__DIR__,2) : $root);
+        }
+        if(!class_exists('Loader')){
+            require_once UTF_ROOT.'/autoload.php';
+        }
         $this->host = $host;
         $this->port = $port;
         $this->mode = $mode;
@@ -43,10 +64,10 @@ class Pool{
         $result = $this->pool->taskwait($data);
         if ($result !== false) {
             $result=json_decode($result,true);
-                  if ($result['status'] == 'OK') {
+            if (is_array($result) && $result['status'] == 'OK') {
                 $this->pool->send($fd, json_encode($result['data']) . "\n");
             } else {
-                $this->pool->send($fd, $result);
+                $this->pool->send($fd, json_encode($result) . "\n");
             }
             return;
         } else {
@@ -54,36 +75,12 @@ class Pool{
         }
     }
     public function OnTask($serv, $task_id, $from_id, $sql){
-        static $link = null;
-        UTKILL:
-            if ($link == null) {
-                $link = Mysql::GetMysql();
-                if (!$link) {
-                    $link = null;
-                    $this->pool->finish(mysqli_error($link));
-                    return;
-                }   
-            }   
-        $result = $link->query($sql);
-        if (!$result) {
-            if(in_array(mysqli_errno($link),[2013,2006])){
-                    $link = null;
-                    goto UTKILL;
-            }else{
-                $this->pool->finish(mysqli_error($link));
-                return;
-            }
+        $result=Db::Raw($sql);
+        if($result===false){
+            $this->pool->finish(json_encode(array("status"=>"ERROR","data"=>"query failed")));
+            return;
         }
-        if(preg_match("/^select/i", $sql)){
-             $data = array();
-                while ($fetchResult = mysqli_fetch_assoc($result) ){
-                     $data['data'][]=$fetchResult;
-                }                
-        }else{
-            $data['data'] = $result;
-        }
-        $data['status']="OK";
-        $this->pool->finish(json_encode($data));
+        $this->pool->finish(json_encode(array("status"=>"OK","data"=>$result)));
     }
     public function OnFinish($serv, $task_id, $data){
         echo "done";
