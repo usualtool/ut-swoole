@@ -28,7 +28,7 @@ class Http{
         }
         if($request->header){
             foreach ($request->header as $key => $val){
-                $_SERVER[strtoupper($key)] = $val;
+                $_SERVER['HTTP_'.strtoupper(str_replace('-','_',$key))] = $val;
             }
         }
         if($request->post){
