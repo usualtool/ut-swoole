@@ -33,6 +33,9 @@ if(isset($request) && is_object($request)){
     foreach((array)$request->header as $key=>$val){
         $server['HTTP_'.strtoupper(str_replace('-','_',$key))]=$val;
     }
+    if(!empty($server['HTTP_X_REAL_IP'])){
+        $server['REMOTE_ADDR']=$server['HTTP_X_REAL_IP'];
+    }
     $server['HTTP_HOST']=$server['HTTP_HOST'] ?? ($server['SERVER_NAME'] ?? 'localhost');
     $server['REQUEST_METHOD']=$server['REQUEST_METHOD'] ?? 'GET';
     $server['REQUEST_URI']=$server['REQUEST_URI'] ?? '/';
