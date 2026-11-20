@@ -9,7 +9,10 @@ class Http{
         $this->server->set(array(
             "enable_static_handler" => true,
             "document_root" => OPEN_ROOT,
-            "worker_num"=>10
+            "worker_num" => 10,
+            "max_request" => 5000,
+            "enable_coroutine" => true,
+            "hook_flags" => 0
         ));
     }
     public function Run(){
@@ -48,6 +51,6 @@ class Http{
         $response->end($body);
     }
     public function onClose(){
-        echo"Close Server.\r\n";
+        //echo"Close Server.\r\n";
     }
 }
